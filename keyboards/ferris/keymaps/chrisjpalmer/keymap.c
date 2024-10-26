@@ -33,14 +33,20 @@ enum layers {
     _EPHEMERAL_HOME,
 };
 
-#define EP_HOME TO(_EPHEMERAL_HOME)
+#define EP_HOME OSL(_EPHEMERAL_HOME)
 #define OS_NUMX OSL(_NUMBERS_AUX)
 
 #define GUI_SLS LGUI_T(KC_SLSH)
 #define GUI_Z LGUI_T(KC_Z)
 #define ALT_X LALT_T(KC_X)
+#define GUI_LFT LGUI(KC_LEFT)
+#define GUI_RHT LGUI(KC_RIGHT)
 #define ALT_DOT LALT_T(KC_DOT)
-
+#define CMD_PLT LGUI(LSFT(KC_P))
+#define CMD_P LGUI(KC_P)
+#define CMD_F LGUI(KC_F)
+#define ALT_TAB LALT(KC_TAB)
+#define ALT_TLD LALT(KC_TILD)
 
 // Defines a layout for auxiliary layers; the layout will be common on the
 // different layers, so it is better to only define it once.
@@ -59,7 +65,7 @@ enum layers {
 layer_state_t layer_state_set_user(layer_state_t state) {
     return update_tri_layer_state(state, _SPECIAL, _NUMBERS, _ARROWS);
 }
-
+//
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_QWERTY] = LAYOUT(
@@ -91,24 +97,20 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_ARROWS] = LAYOUT_SUPER(
-        _______, KC_WH_D, KC_MS_U, KC_WH_U, QK_RBT,    _______, _______, _______, _______, _______,
-        _______, KC_MS_L, KC_MS_D, KC_MS_R, _______,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
-        _______, KC_BTN2, _______, _______, EP_HOME,   _______, _______, _______, _______, _______,
+        _______, CMD_F, KC_WH_U, CMD_PLT, CMD_P,     GUI_LFT, KC_PGDN, KC_PGUP, GUI_RHT, _______,
+        _______, KC_LALT, KC_WH_D, KC_LSFT, _______,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
+        _______, _______, _______, _______, EP_HOME,   KC_HOME, KC_TAB,  KC_TILD, KC_END,  _______,
                                    _______, _______,   _______, _______
     ),
 
     [_EPHEMERAL_HOME] = LAYOUT(
-        _______,     _______,   _______,          _______,        CG_TOGG,
-        _______,     _______,   _______,          _______,        _______,
+        _______, _______, _______, _______, CG_TOGG,   _______, _______, _______, _______, _______,
 
-        _______,     _______,   _______,          _______,        _______,
-        _______,     _______,   _______,          _______,        _______,
+        _______, _______, _______, _______, _______,   _______, _______, _______, _______, _______,
 
-        _______,     _______,   _______,          _______,        _______,
-        _______,     _______,   _______,          _______,        QK_BOOT,
+        _______, _______, _______, _______, _______,   _______, _______, _______, _______, QK_BOOT,
 
-        _______,        TO(_QWERTY),
-        TO(_SPECIAL),   _______
+                            _______, TO(_QWERTY), TO(_SPECIAL),   _______
     ),
 };
 // clang-format on
