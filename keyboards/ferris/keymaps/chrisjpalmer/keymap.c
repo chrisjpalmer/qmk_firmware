@@ -39,8 +39,8 @@ enum layers {
 #define GUI_SLS LGUI_T(KC_SLSH)
 #define GUI_Z LGUI_T(KC_Z)
 #define ALT_X LALT_T(KC_X)
-#define GUI_LFT LGUI(KC_LEFT)
-#define GUI_RHT LGUI(KC_RIGHT)
+#define ALT_LFT LALT(KC_LEFT)
+#define ALT_RHT LALT(KC_RIGHT)
 #define ALT_DOT LALT_T(KC_DOT)
 #define CMD_PLT LGUI(LSFT(KC_P))
 #define CMD_P LGUI(KC_P)
@@ -97,8 +97,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_ARROWS] = LAYOUT_SUPER(
-        _______, CMD_F, KC_WH_U, CMD_PLT, CMD_P,     GUI_LFT, KC_PGDN, KC_PGUP, GUI_RHT, _______,
-        _______, KC_LALT, KC_WH_D, KC_LSFT, _______,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
+        _______, CMD_F, KC_WH_U, CMD_PLT, CMD_P,       ALT_LFT, KC_PGDN, KC_PGUP, ALT_RHT, _______,
+        _______, KC_LGUI, KC_WH_D, KC_LSFT, _______,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
         _______, _______, _______, _______, EP_HOME,   KC_HOME, KC_TAB,  KC_TILD, KC_END,  _______,
                                    _______, _______,   _______, _______
     ),
@@ -114,7 +114,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 };
 // clang-format on
-static bool did_detect_mac = false;
+static bool did_detect_windows = false;
 bool process_detected_host_os_kb(os_variant_t detected_os) {
     if (!process_detected_host_os_user(detected_os)) {
         return false;
@@ -123,12 +123,22 @@ bool process_detected_host_os_kb(os_variant_t detected_os) {
         case OS_MACOS:
         case OS_IOS:
             // rgb_matrix_set_color_all(RGB_WHITE);
-            did_detect_mac = true;
-            print("detected mac\n");
+            print("detected mac, deactivating swapping of gui and control\n");
+            keymap_config.raw = eeconfig_read_keymap();
+            keymap_config.swap_lctl_lgui = false;
+            keymap_config.swap_rctl_rgui = false;
+            eeconfig_update_keymap(keymap_config.raw);
+            clear_keyboard();
             break;
         case OS_WINDOWS:
             // rgb_matrix_set_color_all(RGB_BLUE);
-            print("detected windows\n");
+            did_detect_windows = true;
+            print("detected windows, swapping gui and control\n");
+            keymap_config.raw = eeconfig_read_keymap();
+            keymap_config.swap_lctl_lgui = true;
+            keymap_config.swap_rctl_rgui = true;
+            eeconfig_update_keymap(keymap_config.raw);
+            clear_keyboard();
             break;
         case OS_LINUX:
             // rgb_matrix_set_color_all(RGB_ORANGE);
@@ -145,12 +155,15 @@ bool process_detected_host_os_kb(os_variant_t detected_os) {
 
 // Initialize variable holding the binary
 // representation of active modifiers.
-bool ctrl_down = false;
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    return true;
+    if (!did_detect_windows) {
+        return true;
+    }
+    // return true;
     // return true;
     // Store the current modifier state in the variable for later reference
-    // uint8_t mod_state = get_mods();
+    
     // if(mod_state & MOD_MASK_CTRL) {
     //     // del_mods(MOD_MASK_CTRL);
     //     set_mods(MOD_LGUI);
@@ -160,76 +173,147 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     //     del_mods(MOD_LGUI);
     // }
     // return true;
-    // switch (keycode) {
 
-    // case KC_BSPC:
-    //     {
-    //     // Initialize a boolean variable that keeps track
-    //     // of the delete key status: registered or not?
-    //     static bool delkey_registered;
-    //     if (record->event.pressed) {
-    //         // Detect the activation of either shift keys
-    //         if (mod_state & MOD_MASK_SHIFT) {
-    //             // First temporarily canceling both shifts so that
-    //             // shift isn't applied to the KC_DEL keycode
-    //             del_mods(MOD_MASK_SHIFT);
-    //             register_code(KC_DEL);
-    //             // Update the boolean variable to reflect the status of KC_DEL
-    //             delkey_registered = true;
-    //             // Reapplying modifier state so that the held shift key(s)
-    //             // still work even after having tapped the Backspace/Delete key.
-    //             set_mods(mod_state);
-    //             return false;
-    //         }
-    //     } else { // on release of KC_BSPC
-    //         // In case KC_DEL is still being sent even after the release of KC_BSPC
-    //         if (delkey_registered) {
-    //             unregister_code(KC_DEL);
-    //             delkey_registered = false;
-    //             return false;
-    //         }
-    //     }
-    //     // Let QMK process the KC_BSPC keycode as usual outside of shift
-    //     return true;
-    // }
+    uint8_t mod_state = get_mods();
+    static bool alt_tab_registered;
+    static bool ctl_left_registered;
+    static bool ctl_right_registered;
 
-    // }
-    // return true;
+    switch (keycode) {
+
+    case KC_TAB:
+        printf("tab pressed\n");
+        {
+        // Initialize a boolean variable that keeps track
+        // of the delete key status: registered or not?
+        if (record->event.pressed) {
+            // Detect the activation of gui key (check control because mod state
+            // is effected by the magic key swap feature)
+            if (mod_state & MOD_MASK_CTRL) {
+                printf("replacing gui tab -> alt tab\n");
+                del_mods(MOD_MASK_CTRL);
+                set_mods(MOD_MASK_ALT);
+                register_code(KC_TAB);
+                alt_tab_registered = true;
+                return false;
+            }
+        } else { 
+            // on release of tab key unregister tab,
+            // but avoid normal processing as we modified
+            // the mod state.
+            printf("releasing tab key\n");
+            if (alt_tab_registered) {
+                unregister_code(KC_TAB);
+                return false;
+            }
+        }
+        return true;
+    }
+    case KC_LGUI:
+    case KC_RGUI:
+        // when releasing the gui key,
+        // clear gui if it was clicked
+        printf("gui pressed\n");
+        if(!record->event.pressed && alt_tab_registered) {
+            printf("releasing alt key\n");
+            del_mods(MOD_MASK_ALT);
+            alt_tab_registered = false;
+        }
+        return true;
+
+    // as alt left is a key combo in the keymap
+    // both are hit at the same time and mod_state
+    // wont contain alt yet. Also the key code contains
+    // the bitwise OR of both keys.. we must handle
+    // accordingly
+    case QK_LALT | KC_LEFT:
+        printf("alt left pressed\n");
+        if(record->event.pressed) {
+            printf("replacing alt left -> ctrl left\n");
+            del_mods(MOD_MASK_ALT);
+            set_mods(MOD_MASK_CTRL);
+            
+            // send ctrl + left
+            register_code(KC_LEFT);
+            ctl_left_registered = true;
+
+            // put mod state back so 
+            // subsequent presses are considered 'alt'
+            set_mods(mod_state);
+            return false;
+        } else {
+            if(ctl_left_registered) {
+                printf("releasing ctl left \n");
+                unregister_code(KC_LEFT);
+                ctl_left_registered = false;
+                return false;
+            }
+            return true;
+        }
+        break;
+     case QK_LALT | KC_RIGHT:
+        printf("alt right pressed\n");
+        if(record->event.pressed) {
+            printf("replacing alt right -> ctrl right\n");
+            del_mods(MOD_MASK_ALT);
+            set_mods(MOD_MASK_CTRL);
+            
+            // send ctrl + right
+            register_code(KC_RIGHT);
+            ctl_right_registered = true;
+
+            // put mod state back so 
+            // subsequent presses are considered 'alt'
+            set_mods(mod_state);
+            return false;
+        } else {
+            if(ctl_right_registered) {
+                printf("releasing ctl right \n");
+                unregister_code(KC_RIGHT);
+                ctl_right_registered = false;
+                return false;
+            }
+            return true;
+        }
+        break;
+    }
+    return true;
 };
 
-// bool is_mac(bool key_down, void *layer) {
-//     printf("is_mac() called, returning %i\n", did_detect_mac);
-//     return did_detect_mac;
-// }
-// // key_override_t lctl_override2 = ko_make_basic();
+bool is_windows(bool key_down, void *layer) {
+    printf("is_windows() called, returning %i\n", did_detect_windows);
+    return did_detect_windows;
+}
 
-// key_override_t lctl_override = {.trigger_mods           = MOD_BIT(KC_LCTL),                       //
+// key_override_t lctl_override = ko_make_basic(KC_LALT, KC_LEFT, KC);
+
+// key_override_t lalt_override = {.trigger_mods           = MOD_BIT(KC_LALT),                       //
 //                                 .layers                 = ~0,                                          //
-//                                 .suppressed_mods        = MOD_BIT(KC_LCTL),                       //
+//                                 .suppressed_mods        = MOD_BIT(KC_LALT),                       //
 //                                 .options                = ko_options_all_activations,                 //
 //                                 .negative_mod_mask      = 0,          //
-//                                 .custom_action          = is_mac,                                           //
+//                                 .custom_action          = is_windows,                                           //
 //                                 .context                = NULL,                                          //
-//                                 .trigger                = KC_NO,                                                     //
-//                                 .replacement            = KC_LGUI,                                                     //
+//                                 .trigger                = KC_LEFT,  
+//                                 .replacement            = LCTL(KC_LEFT),
 //                                 .enabled                = NULL};
 
-// key_override_t rctl_override = {.trigger_mods           = MOD_BIT(KC_RCTL),                       //
+// key_override_t ralt_override = {.trigger_mods           = MOD_BIT(KC_LALT),                       //
 //                                 .layers                 = ~0,                                          //
-//                                 .suppressed_mods        = MOD_BIT(KC_RCTL),                       //
+//                                 .suppressed_mods        = MOD_BIT(KC_LALT),                       //
 //                                 .options                = ko_options_all_activations,                 //
 //                                 .negative_mod_mask      = 0,          //
-//                                 .custom_action          = is_mac,                                           //
+//                                 .custom_action          = is_windows,                                           //
 //                                 .context                = NULL,                                          //
-//                                 .trigger                = KC_NO,                                                     //
-//                                 .replacement            = KC_RGUI,                                                     //
+//                                 .trigger                = KC_RIGHT,  
+//                                 .replacement            = LCTL(KC_RIGHT),
 //                                 .enabled                = NULL};
 
-// const key_override_t *key_overrides[] = {
-// 	// &delete_key_override
-//     &lctl_override,
-//     &rctl_override,
-// };
+
+const key_override_t *key_overrides[] = {
+    // &lalt_override,
+    // &ralt_override,
+};
 
 #if defined(ENCODER_ENABLE) && defined(ENCODER_MAP_ENABLE)
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
