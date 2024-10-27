@@ -45,6 +45,7 @@ enum layers {
 #define CMD_PLT LGUI(LSFT(KC_P))
 #define CMD_P LGUI(KC_P)
 #define CMD_F LGUI(KC_F)
+#define CMD_SF LGUI(LSFT(KC_F))
 #define ALT_TAB LALT(KC_TAB)
 #define ALT_TLD LALT(KC_TILD)
 
@@ -97,9 +98,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_ARROWS] = LAYOUT_SUPER(
-        _______, CMD_F, KC_WH_U, CMD_PLT, CMD_P,       ALT_LFT, KC_PGDN, KC_PGUP, ALT_RHT, _______,
+        _______, _______, KC_WH_U, CMD_PLT, CMD_P,       ALT_LFT, KC_PGDN, KC_PGUP, ALT_RHT, _______,
         _______, KC_LGUI, KC_WH_D, KC_LSFT, _______,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
-        _______, _______, _______, _______, EP_HOME,   KC_HOME, KC_TAB,  KC_TILD, KC_END,  _______,
+        _______, CMD_F  , CMD_SF , _______, EP_HOME,   KC_HOME, KC_TAB,  KC_TILD, KC_END,  _______,
                                    _______, _______,   _______, _______
     ),
 
@@ -230,8 +231,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         printf("alt left pressed\n");
         if(record->event.pressed) {
             printf("replacing alt left -> ctrl left\n");
-            del_mods(MOD_MASK_ALT);
-            set_mods(MOD_MASK_CTRL);
+            add_mods(MOD_MASK_CTRL);
             
             // send ctrl + left
             register_code(KC_LEFT);
@@ -255,8 +255,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         printf("alt right pressed\n");
         if(record->event.pressed) {
             printf("replacing alt right -> ctrl right\n");
-            del_mods(MOD_MASK_ALT);
-            set_mods(MOD_MASK_CTRL);
+            add_mods(MOD_MASK_CTRL);
             
             // send ctrl + right
             register_code(KC_RIGHT);
