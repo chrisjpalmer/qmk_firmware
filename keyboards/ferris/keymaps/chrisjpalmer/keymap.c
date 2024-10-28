@@ -41,6 +41,8 @@ enum layers {
 #define ALT_X LALT_T(KC_X)
 #define ALT_LFT LALT(KC_LEFT)
 #define ALT_RHT LALT(KC_RIGHT)
+#define GO_BACK LCTL(LSFT(KC_LEFT))
+#define GO_FWD LCTL(LSFT(KC_RIGHT))
 #define ALT_DOT LALT_T(KC_DOT)
 #define CMD_PLT LGUI(LSFT(KC_P))
 #define CMD_P LGUI(KC_P)
@@ -48,6 +50,7 @@ enum layers {
 #define CMD_SF LGUI(LSFT(KC_F))
 #define ALT_TAB LALT(KC_TAB)
 #define ALT_TLD LALT(KC_TILD)
+#define ALT_BSP LALT(KC_BSPC)
 
 // Defines a layout for auxiliary layers; the layout will be common on the
 // different layers, so it is better to only define it once.
@@ -63,7 +66,34 @@ enum layers {
                KC_LCTL, _______, R16, KC_LSFT \
 )
 
+static bool alt_tab_entered;
+static bool cmd_tld_entered;
+static bool did_detect_windows = false;
+
 layer_state_t layer_state_set_user(layer_state_t state) {
+    if(!layer_state_cmp(state, _NUMBERS) && alt_tab_entered) {
+        // exited the numbers layer... release the alt_tab
+        printf("moving away from NUMBERS layer\n");
+        printf("releasing alt key\n");
+        if(did_detect_windows) {
+            del_mods(MOD_MASK_ALT | MOD_MASK_SHIFT);
+        } else {
+            del_mods(MOD_MASK_GUI | MOD_MASK_SHIFT);
+        }
+        unregister_code(KC_TAB);
+        alt_tab_entered = false;
+    }
+
+    if(!layer_state_cmp(state, _NUMBERS) && cmd_tld_entered) {
+        // exited the numbers layer... release the alt_tab
+        printf("moving away from NUMBERS layer\n");
+        printf("releasing cmd ~ key\n");
+        
+        del_mods(MOD_MASK_GUI | MOD_MASK_SHIFT);
+        unregister_code(KC_GRAVE);
+        cmd_tld_entered = false;
+    }
+
     return update_tri_layer_state(state, _SPECIAL, _NUMBERS, _ARROWS);
 }
 //
@@ -73,7 +103,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,      KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,
         KC_A,    KC_S,    KC_D,    KC_F,    KC_G,      KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN,
         GUI_Z,   ALT_X,   KC_C,    KC_V,    KC_B,      KC_N,    KC_M,    KC_COMM, ALT_DOT, GUI_SLS,
-              LCTL_T(KC_ENT), LT(_SPECIAL, KC_BSPC),    LT(_NUMBERS, KC_SPC), KC_LSFT
+              LCTL_T(KC_ENT), LT(_NUMBERS, KC_BSPC),    LT(_SPECIAL, KC_SPC), KC_LSFT
     ),
 
     [_SPECIAL] = LAYOUT_SUPER(
@@ -98,9 +128,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_ARROWS] = LAYOUT_SUPER(
-        _______, _______, KC_WH_U, CMD_PLT, CMD_P,       ALT_LFT, KC_PGDN, KC_PGUP, ALT_RHT, _______,
-        _______, KC_LGUI, KC_WH_D, KC_LSFT, _______,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
-        _______, CMD_F  , CMD_SF , _______, EP_HOME,   KC_HOME, KC_TAB,  KC_TILD, KC_END,  _______,
+        CMD_SF,  CMD_F,   KC_WH_U, CMD_P,   CMD_PLT,   ALT_LFT, GO_BACK, GO_FWD,  ALT_RHT, _______,
+        _______, _______, KC_WH_D, KC_LSFT, ALT_BSP,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
+        _______, _______, _______, _______, EP_HOME,   KC_HOME, KC_PGDN, KC_PGUP, KC_END,  _______,
                                    _______, _______,   _______, _______
     ),
 
@@ -115,7 +145,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 };
 // clang-format on
-static bool did_detect_windows = false;
+
 bool process_detected_host_os_kb(os_variant_t detected_os) {
     if (!process_detected_host_os_user(detected_os)) {
         return false;
@@ -158,67 +188,94 @@ bool process_detected_host_os_kb(os_variant_t detected_os) {
 // representation of active modifiers.
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    if (!did_detect_windows) {
-        return true;
-    }
-    // return true;
-    // return true;
-    // Store the current modifier state in the variable for later reference
-    
-    // if(mod_state & MOD_MASK_CTRL) {
-    //     // del_mods(MOD_MASK_CTRL);
-    //     set_mods(MOD_LGUI);
-    //     ctrl_down = true;
-    // } else if(ctrl_down) {
-    //     ctrl_down = false;
-    //     del_mods(MOD_LGUI);
-    // }
-    // return true;
-
     uint8_t mod_state = get_mods();
-    static bool alt_tab_registered;
+    
     static bool ctl_left_registered;
     static bool ctl_right_registered;
+    static bool alt_shift_left_registered;
+    static bool alt_shift_right_registered;
+    static bool ctl_bspc_registered;
 
     switch (keycode) {
 
-    case KC_TAB:
-        printf("tab pressed\n");
-        {
-        // Initialize a boolean variable that keeps track
-        // of the delete key status: registered or not?
-        if (record->event.pressed) {
-            // Detect the activation of gui key (check control because mod state
-            // is effected by the magic key swap feature)
-            if (mod_state & MOD_MASK_CTRL) {
-                printf("replacing gui tab -> alt tab\n");
-                del_mods(MOD_MASK_CTRL);
-                set_mods(MOD_MASK_ALT);
+    case KC_VOLU:
+        printf("volu pressed\n");
+        if (layer_state_is(_NUMBERS)) {
+            if (record->event.pressed) {
+                if(did_detect_windows) {
+                    printf("triggering alt tab\n");
+                    set_mods(MOD_MASK_ALT);
+                } else {
+                    printf("triggering cmd tab\n");
+                    set_mods(MOD_MASK_GUI);
+                }
                 register_code(KC_TAB);
-                alt_tab_registered = true;
+                alt_tab_entered = true;
                 return false;
+            } else { 
+                // on release of tab key unregister tab,
+                // but avoid normal processing as we modified
+                // the mod state.
+                printf("releasing tab key\n");
+                if (alt_tab_entered) {
+                    unregister_code(KC_TAB);
+                    return false;
+                }
             }
-        } else { 
-            // on release of tab key unregister tab,
-            // but avoid normal processing as we modified
-            // the mod state.
-            printf("releasing tab key\n");
-            if (alt_tab_registered) {
-                unregister_code(KC_TAB);
-                return false;
-            }
+            return true;
         }
         return true;
-    }
-    case KC_LGUI:
-    case KC_RGUI:
-        // when releasing the gui key,
-        // clear gui if it was clicked
-        printf("gui pressed\n");
-        if(!record->event.pressed && alt_tab_registered) {
-            printf("releasing alt key\n");
-            del_mods(MOD_MASK_ALT);
-            alt_tab_registered = false;
+
+    case KC_VOLD:
+        printf("vold pressed\n");
+        if(layer_state_is(_NUMBERS)) {
+            if (record->event.pressed) {
+                if(did_detect_windows) {
+                    printf("triggering alt shift tab\n");
+                    set_mods(MOD_MASK_ALT | MOD_MASK_SHIFT);
+                } else {
+                    printf("triggering cmd shift tab\n");
+                    set_mods(MOD_MASK_GUI | MOD_MASK_SHIFT);
+                }
+                register_code(KC_TAB);
+                alt_tab_entered = true;
+                return false;
+            } else { 
+                // on release of tab key unregister tab,
+                // but avoid normal processing as we modified
+                // the mod state.
+                printf("releasing tab key\n");
+                if (alt_tab_entered) {
+                    unregister_code(KC_TAB);
+                    return false;
+                }
+            }
+            return true;
+        }
+        return true;
+
+    case KC_MPLY:
+        printf("media mply pressed\n");
+        if(!did_detect_windows) {
+            if (record->event.pressed) {
+                
+                printf("triggering cmd ~\n");
+                set_mods(MOD_MASK_GUI | MOD_MASK_SHIFT);
+                register_code(KC_GRAVE);
+                cmd_tld_entered = true;
+
+                set_mods(mod_state);
+                return false;
+            } else { 
+                // on release of media mply unregister grave,
+                // but avoid normal processing as we modified
+                // the mod state.
+                if (cmd_tld_entered) {
+                    printf("releasing ~\n");
+                    unregister_code(KC_GRAVE);
+                    return false;
+                }
+            }
         }
         return true;
 
@@ -229,52 +286,136 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // accordingly
     case QK_LALT | KC_LEFT:
         printf("alt left pressed\n");
-        if(record->event.pressed) {
-            printf("replacing alt left -> ctrl left\n");
-            add_mods(MOD_MASK_CTRL);
-            
-            // send ctrl + left
-            register_code(KC_LEFT);
-            ctl_left_registered = true;
+        if(did_detect_windows) {
+            if(record->event.pressed) {
+                printf("replacing alt left -> ctrl left\n");
+                add_mods(MOD_MASK_CTRL);
+                
+                // send ctrl + left
+                register_code(KC_LEFT);
+                ctl_left_registered = true;
 
-            // put mod state back so 
-            // subsequent presses are considered 'alt'
-            set_mods(mod_state);
-            return false;
-        } else {
-            if(ctl_left_registered) {
-                printf("releasing ctl left \n");
-                unregister_code(KC_LEFT);
-                ctl_left_registered = false;
+                // put mod state back so 
+                // subsequent presses are considered 'alt'
+                set_mods(mod_state);
                 return false;
+            } else {
+                if(ctl_left_registered) {
+                    printf("releasing ctl left \n");
+                    unregister_code(KC_LEFT);
+                    ctl_left_registered = false;
+                    return false;
+                }
+                return true;
             }
-            return true;
         }
-        break;
+        return true;
+
      case QK_LALT | KC_RIGHT:
         printf("alt right pressed\n");
-        if(record->event.pressed) {
-            printf("replacing alt right -> ctrl right\n");
-            add_mods(MOD_MASK_CTRL);
-            
-            // send ctrl + right
-            register_code(KC_RIGHT);
-            ctl_right_registered = true;
+        if(did_detect_windows) {
+            if(record->event.pressed) {
+                printf("replacing alt right -> ctrl right\n");
+                add_mods(MOD_MASK_CTRL);
+                
+                // send ctrl + right
+                register_code(KC_RIGHT);
+                ctl_right_registered = true;
 
-            // put mod state back so 
-            // subsequent presses are considered 'alt'
-            set_mods(mod_state);
-            return false;
-        } else {
-            if(ctl_right_registered) {
-                printf("releasing ctl right \n");
-                unregister_code(KC_RIGHT);
-                ctl_right_registered = false;
+                // put mod state back so 
+                // subsequent presses are considered 'alt'
+                set_mods(mod_state);
                 return false;
+            } else {
+                if(ctl_right_registered) {
+                    printf("releasing ctl right \n");
+                    unregister_code(KC_RIGHT);
+                    ctl_right_registered = false;
+                    return false;
+                }
+                return true;
             }
-            return true;
         }
-        break;
+        return true;
+
+    case QK_LALT | KC_BSPC:
+        printf("alt backspace pressed\n");
+        if(did_detect_windows) {
+            if(record->event.pressed) {
+                printf("replacing alt backspace -> ctrl backspace\n");
+                add_mods(MOD_MASK_CTRL);
+                
+                // send ctrl + right
+                register_code(KC_BSPC);
+                ctl_bspc_registered = true;
+
+                // put mod state back so 
+                // subsequent presses are considered 'alt'
+                set_mods(mod_state);
+                return false;
+            } else {
+                if(ctl_bspc_registered) {
+                    printf("releasing ctl right \n");
+                    unregister_code(KC_BSPC);
+                    ctl_bspc_registered = false;
+                    return false;
+                }
+                return true;
+            }
+        }
+        return true;
+
+    case QK_LCTL | QK_LSFT | KC_LEFT:
+        printf("ctl shift left pressed\n");
+        if(did_detect_windows) {
+            if(record->event.pressed) {
+                printf("replacing ctl shift left -> alt shift left\n");
+                set_mods(MOD_LALT | MOD_LSFT);
+                
+                // send ctrl + left
+                register_code(KC_LEFT);
+                alt_shift_left_registered = true;
+
+                // put mod state back
+                set_mods(mod_state);
+                return false;
+            } else {
+                if(alt_shift_left_registered) {
+                    printf("releasing ctl left \n");
+                    unregister_code(KC_LEFT);
+                    alt_shift_left_registered = false;
+                    return false;
+                }
+                return true;
+            }
+        }
+        return true;
+    case QK_LCTL | QK_LSFT | KC_RIGHT:
+        printf("ctl shift right pressed\n");
+        if(did_detect_windows) {
+            if(record->event.pressed) {
+                printf("replacing ctl shift right -> alt shift right\n");
+                set_mods(MOD_LALT | MOD_LSFT);
+                
+                // send ctrl + right
+                register_code(KC_RIGHT);
+                alt_shift_right_registered = true;
+
+                // put mod state back
+                set_mods(mod_state);
+                return false;
+            } else {
+                if(alt_shift_right_registered) {
+                    printf("releasing ctl right \n");
+                    unregister_code(KC_RIGHT);
+                    alt_shift_right_registered = false;
+                    return false;
+                }
+                return true;
+            }
+        }
+        return true;
+
     }
     return true;
 };
