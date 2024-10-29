@@ -51,6 +51,8 @@ enum layers {
 #define ALT_TAB LALT(KC_TAB)
 #define ALT_TLD LALT(KC_TILD)
 #define ALT_BSP LALT(KC_BSPC)
+#define SHT_ALT LSFT(KC_LALT)
+#define ALT_ENT LALT(KC_ENT)
 
 // Defines a layout for auxiliary layers; the layout will be common on the
 // different layers, so it is better to only define it once.
@@ -114,7 +116,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_NUMBERS] = LAYOUT_SUPER(
-        _______, KC_MSTP, KC_MPRV, KC_MNXT, _______,   KC_UNDS, KC_7,    KC_8,    KC_9,    _______,
+        _______, KC_MSTP, SHT_ALT, KC_MNXT, _______,   KC_UNDS, KC_7,    KC_8,    KC_9,    _______,
         _______, KC_VOLD, KC_VOLU, KC_MPLY, _______,   KC_SPC,  KC_4,    KC_5,    KC_6,    _______,
         _______, KC_BRID, KC_BRIU, KC_MUTE, _______,   KC_0,    KC_1,    KC_2,    KC_3,    OS_NUMX,
                                    _______, _______,   _______, _______
@@ -128,9 +130,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_ARROWS] = LAYOUT_SUPER(
-        CMD_SF,  CMD_F,   KC_WH_U, CMD_P,   CMD_PLT,   ALT_LFT, GO_BACK, GO_FWD,  ALT_RHT, _______,
-        _______, _______, KC_WH_D, KC_LSFT, ALT_BSP,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
-        _______, _______, _______, _______, EP_HOME,   KC_HOME, KC_PGDN, KC_PGUP, KC_END,  _______,
+        _______, CMD_SF,  _______, CMD_P,   CMD_PLT,   ALT_LFT, GO_BACK, GO_FWD,  ALT_RHT, _______,
+        _______, _______, ALT_ENT, KC_LSFT, ALT_BSP,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
+        _______, _______, _______, _______, EP_HOME,   KC_HOME, _______, _______, KC_END,  _______,
                                    _______, _______,   _______, _______
     ),
 
@@ -424,36 +426,6 @@ bool is_windows(bool key_down, void *layer) {
     printf("is_windows() called, returning %i\n", did_detect_windows);
     return did_detect_windows;
 }
-
-// key_override_t lctl_override = ko_make_basic(KC_LALT, KC_LEFT, KC);
-
-// key_override_t lalt_override = {.trigger_mods           = MOD_BIT(KC_LALT),                       //
-//                                 .layers                 = ~0,                                          //
-//                                 .suppressed_mods        = MOD_BIT(KC_LALT),                       //
-//                                 .options                = ko_options_all_activations,                 //
-//                                 .negative_mod_mask      = 0,          //
-//                                 .custom_action          = is_windows,                                           //
-//                                 .context                = NULL,                                          //
-//                                 .trigger                = KC_LEFT,  
-//                                 .replacement            = LCTL(KC_LEFT),
-//                                 .enabled                = NULL};
-
-// key_override_t ralt_override = {.trigger_mods           = MOD_BIT(KC_LALT),                       //
-//                                 .layers                 = ~0,                                          //
-//                                 .suppressed_mods        = MOD_BIT(KC_LALT),                       //
-//                                 .options                = ko_options_all_activations,                 //
-//                                 .negative_mod_mask      = 0,          //
-//                                 .custom_action          = is_windows,                                           //
-//                                 .context                = NULL,                                          //
-//                                 .trigger                = KC_RIGHT,  
-//                                 .replacement            = LCTL(KC_RIGHT),
-//                                 .enabled                = NULL};
-
-
-const key_override_t *key_overrides[] = {
-    // &lalt_override,
-    // &ralt_override,
-};
 
 #if defined(ENCODER_ENABLE) && defined(ENCODER_MAP_ENABLE)
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
