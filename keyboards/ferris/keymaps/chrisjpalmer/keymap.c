@@ -39,6 +39,7 @@ enum layers {
 #define GUI_SLS LGUI_T(KC_SLSH)
 #define GUI_Z LGUI_T(KC_Z)
 #define ALT_X LALT_T(KC_X)
+#define SHFT_C LSFT(KC_C)
 #define ALT_LFT LALT(KC_LEFT)
 #define ALT_RHT LALT(KC_RIGHT)
 #define ALT_DWN LALT(KC_DOWN)
@@ -118,9 +119,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_NUMBERS] = LAYOUT_SUPER(
-        _______, KC_MSTP, SHT_ALT, KC_MNXT, _______,   KC_UNDS, KC_7,    KC_8,    KC_9,    _______,
+        _______, _______, SHT_ALT, KC_LSFT, _______,   KC_UNDS, KC_7,    KC_8,    KC_9,    _______,
         _______, KC_VOLD, KC_VOLU, KC_MPLY, _______,   KC_SPC,  KC_4,    KC_5,    KC_6,    _______,
-        _______, KC_BRID, KC_BRIU, KC_MUTE, _______,   KC_0,    KC_1,    KC_2,    KC_3,    OS_NUMX,
+        _______, _______, _______, _______, _______,   KC_0,    KC_1,    KC_2,    KC_3,    OS_NUMX,
                                    _______, _______,   _______, _______
     ),
 
