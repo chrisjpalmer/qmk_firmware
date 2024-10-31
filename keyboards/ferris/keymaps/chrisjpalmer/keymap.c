@@ -31,6 +31,8 @@ enum layers {
     // The EPHEMERAL_HOME layer can be reached from the normal layers, and the
     // other ephemeral layers can be reached from there.
     _EPHEMERAL_HOME,
+
+    _UNREAL
 };
 
 #define EP_HOME OSL(_EPHEMERAL_HOME)
@@ -140,13 +142,20 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_EPHEMERAL_HOME] = LAYOUT(
-        _______, _______, _______, _______, CG_TOGG,   _______, _______, _______, _______, _______,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,       XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, CG_TOGG,
 
-        _______, _______, _______, _______, _______,   _______, _______, _______, _______, _______,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,       XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, QK_REBOOT,
 
-        _______, _______, _______, _______, _______,   _______, _______, _______, _______, QK_BOOT,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO(_UNREAL),   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, QK_BOOT,
 
-                            _______, TO(_QWERTY), TO(_SPECIAL),   _______
+                            XXXXXXX, TO(_QWERTY), TO(_SPECIAL),   XXXXXXX
+    ),
+
+    [_UNREAL] = LAYOUT(
+        XXXXXXX, KC_Q,    KC_W,    KC_E,    XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX,
+        XXXXXXX, KC_A,    KC_S,    KC_D,    XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX,
+                                   XXXXXXX, TO(_QWERTY),   XXXXXXX, XXXXXXX
     ),
 };
 // clang-format on
