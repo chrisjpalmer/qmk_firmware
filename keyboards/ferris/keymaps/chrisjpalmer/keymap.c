@@ -21,7 +21,7 @@ enum layers {
     _NUMBERS,
     // Keys often required while using numbers on the right hand - plus, minus, etc.
     // Function keys on the left hand
-    _NUMBERS_AUX,
+    _FUNCTION_KEYS,
     // Arrow key layer WIP
     _ARROWS,
 
@@ -36,7 +36,9 @@ enum layers {
 };
 
 #define EP_HOME OSL(_EPHEMERAL_HOME)
-#define OS_NUMX OSL(_NUMBERS_AUX)
+#define OS_FX OSL(_FUNCTION_KEYS)
+#define TO_UNRL TO(_UNREAL)
+#define TO_QRTY TO(_QWERTY)
 
 #define GUI_SLS LGUI_T(KC_SLSH)
 #define GUI_Z LGUI_T(KC_Z)
@@ -58,6 +60,12 @@ enum layers {
 #define ALT_BSP LALT(KC_BSPC)
 #define SHT_ALT LSFT(KC_LALT)
 #define ALT_ENT LALT(KC_ENT)
+#define LIVE_CP LGUI(LALT(KC_F11))
+#define VS_BLD LGUI(LSFT(KC_B))
+#define VS_RUN KC_F5
+#define SW_FWD PB_1
+#define SW_BK PB_2
+#define SW_WND PB_3
 
 // Defines a layout for auxiliary layers; the layout will be common on the
 // different layers, so it is better to only define it once.
@@ -121,17 +129,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_NUMBERS] = LAYOUT_SUPER(
-        _______, _______, SHT_ALT, KC_LSFT, _______,   KC_UNDS, KC_7,    KC_8,    KC_9,    _______,
-        _______, KC_VOLD, KC_VOLU, KC_MPLY, _______,   KC_SPC,  KC_4,    KC_5,    KC_6,    _______,
-        _______, _______, _______, _______, _______,   KC_0,    KC_1,    KC_2,    KC_3,    OS_NUMX,
+        _______, _______, SHT_ALT, KC_LSFT, _______,   _______, KC_7,    KC_8,    KC_9,    _______,
+        _______, SW_BK,   SW_FWD,  SW_WND,  OS_FX  ,   _______, KC_4,    KC_5,    KC_6,    _______,
+        _______, _______, _______, _______, TO_UNRL,   KC_0,    KC_1,    KC_2,    KC_3,    _______,
                                    _______, _______,   _______, _______
     ),
 
-    [_NUMBERS_AUX] = LAYOUT_SUPER(
-        _______, KC_F7,   KC_F8,   KC_F9,   KC_F12,    _______, _______, _______, _______, _______,
-        _______, KC_F4,   KC_F5,   KC_F6,   KC_F11,    _______, KC_PLUS, KC_ASTR, KC_DOT,  _______,
-        _______, KC_F1,   KC_F2,   KC_F3,   KC_F10,    KC_COLN, KC_MINS, KC_SLSH, KC_COMM, KC_NO,
-                                   _______, _______,   _______, _______
+    [_FUNCTION_KEYS] = LAYOUT(
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, KC_F7,   KC_F8,   KC_F9,   KC_F12,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, KC_F4,   KC_F5,   KC_F6,   KC_F11,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, KC_F1,   KC_F2,   KC_F3,   KC_F10,
+                                   XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX
     ),
 
     [_ARROWS] = LAYOUT_SUPER(
@@ -142,20 +150,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_EPHEMERAL_HOME] = LAYOUT(
-        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,       XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, CG_TOGG,
-
-        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,       XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, QK_REBOOT,
-
-        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO(_UNREAL),   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, QK_BOOT,
-
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, CG_TOGG,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, QK_REBOOT,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, QK_BOOT,
                             XXXXXXX, TO(_QWERTY), TO(_SPECIAL),   XXXXXXX
     ),
 
     [_UNREAL] = LAYOUT(
-        XXXXXXX, KC_Q,    KC_W,    KC_E,    XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX,
-        XXXXXXX, KC_A,    KC_S,    KC_D,    XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX,
-        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX,
-                                   XXXXXXX, TO(_QWERTY),   XXXXXXX, XXXXXXX
+        TO_QRTY, KC_Q,    KC_W,    KC_E,    KC_R,      XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX,
+        XXXXXXX, KC_A,    KC_S,    KC_D,    KC_F,      XXXXXXX, VS_RUN,  LIVE_CP,  VS_BLD,  XXXXXXX,
+        XXXXXXX, XXXXXXX, XXXXXXX, KC_C,    KC_V,      XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX,
+                                   XXXXXXX, KC_SPC,    XXXXXXX, XXXXXXX
     ),
 };
 // clang-format on
@@ -212,8 +217,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     switch (keycode) {
 
-    case KC_VOLU:
-        printf("volu pressed\n");
+    case SW_FWD:
+        printf("SW_FWD pressed\n");
         if (layer_state_is(_NUMBERS)) {
             if (record->event.pressed) {
                 if(did_detect_windows) {
@@ -240,8 +245,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
         return true;
 
-    case KC_VOLD:
-        printf("vold pressed\n");
+    case SW_BK:
+          printf("SW_BK pressed\n");
         if(layer_state_is(_NUMBERS)) {
             if (record->event.pressed) {
                 if(did_detect_windows) {
@@ -268,8 +273,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
         return true;
 
-    case KC_MPLY:
-        printf("media mply pressed\n");
+    case SW_WND:
+        printf("SW_WND pressed\n");
         if(!did_detect_windows) {
             if (record->event.pressed) {
                 
