@@ -36,3 +36,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define TAPPING_TERM 200
 #define PERMISSIVE_HOLD
 #define TAPPING_FORCE_HOLD
+#define QUICK_TAP_TERM 0
