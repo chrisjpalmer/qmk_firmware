@@ -138,7 +138,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_FUNCTION_KEYS] = LAYOUT(
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, KC_F7,   KC_F8,   KC_F9,   KC_F12,
-        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, KC_F4,   KC_F5,   KC_F6,   KC_F11,
+        XXXXXXX, VS_RUN,  LIVE_CP, VS_BLD,  XXXXXXX,   XXXXXXX, KC_F4,   KC_F5,   KC_F6,   KC_F11,
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, KC_F1,   KC_F2,   KC_F3,   KC_F10,
                                    XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX
     ),
@@ -151,16 +151,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_EPHEMERAL_HOME] = LAYOUT(
-        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, CG_TOGG,
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, QK_REBOOT,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, QK_BOOT,
                             XXXXXXX, TO(_QWERTY), TO(_SPECIAL),   XXXXXXX
     ),
 
     [_UNREAL] = LAYOUT(
-        TO_QRTY, KC_Q,    KC_W,    KC_E,    KC_R,      XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX,
-        XXXXXXX, KC_A,    KC_S,    KC_D,    KC_F,      XXXXXXX, VS_RUN,  LIVE_CP,  VS_BLD,  XXXXXXX,
-        XXXXXXX, XXXXXXX, XXXXXXX, KC_C,    KC_V,      XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX,
+        TO_QRTY, KC_Q,    KC_W,    KC_E,    KC_R,      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        XXXXXXX, KC_A,    KC_S,    KC_D,    KC_F,      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+        XXXXXXX, XXXXXXX, XXXXXXX, KC_C,    KC_V,      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
                                    XXXXXXX, KC_SPC,    XXXXXXX, XXXXXXX
     ),
 };
@@ -170,35 +170,40 @@ bool process_detected_host_os_kb(os_variant_t detected_os) {
     if (!process_detected_host_os_user(detected_os)) {
         return false;
     }
+
     switch (detected_os) {
         case OS_MACOS:
+            print("detected mac\n");
+            break;
         case OS_IOS:
-            // rgb_matrix_set_color_all(RGB_WHITE);
-            print("detected mac, deactivating swapping of gui and control\n");
-            keymap_config.raw = eeconfig_read_keymap();
-            keymap_config.swap_lctl_lgui = false;
-            keymap_config.swap_rctl_rgui = false;
-            eeconfig_update_keymap(keymap_config.raw);
-            clear_keyboard();
+            print("detected ios\n");
             break;
         case OS_WINDOWS:
-            // rgb_matrix_set_color_all(RGB_BLUE);
-            did_detect_windows = true;
-            print("detected windows, swapping gui and control\n");
-            keymap_config.raw = eeconfig_read_keymap();
-            keymap_config.swap_lctl_lgui = true;
-            keymap_config.swap_rctl_rgui = true;
-            eeconfig_update_keymap(keymap_config.raw);
-            clear_keyboard();
+            print("detected windows\n");
             break;
         case OS_LINUX:
-            // rgb_matrix_set_color_all(RGB_ORANGE);
             print("detected linux\n");
             break;
         case OS_UNSURE:
-            // rgb_matrix_set_color_all(RGB_RED);
             print("unknown os\n");
             break;
+    }
+
+    if(detected_os == OS_MACOS || detected_os == OS_IOS) {
+        print("using mac keyboard layout\n");
+        keymap_config.raw = eeconfig_read_keymap();
+        keymap_config.swap_lctl_lgui = false;
+        keymap_config.swap_rctl_rgui = false;
+        eeconfig_update_keymap(keymap_config.raw);
+        clear_keyboard();        
+    } else {
+        did_detect_windows = true;
+        print("detected windows, swapping gui and control\n");
+        keymap_config.raw = eeconfig_read_keymap();
+        keymap_config.swap_lctl_lgui = true;
+        keymap_config.swap_rctl_rgui = true;
+        eeconfig_update_keymap(keymap_config.raw);
+        clear_keyboard();
     }
     
     return true;
