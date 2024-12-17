@@ -67,6 +67,7 @@ enum layers {
 #define SW_FWD PB_1
 #define SW_BK PB_2
 #define SW_WND PB_3
+#define OP_TRM PB_4
 
 // Defines a layout for auxiliary layers; the layout will be common on the
 // different layers, so it is better to only define it once.
@@ -130,8 +131,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_NUMBERS] = LAYOUT_SUPER(
-        _______, SHT_TAB, SHT_ALT, KC_LSFT, KC_DEL ,   _______, KC_7,    KC_8,    KC_9,    _______,
-        _______, SW_BK,   SW_FWD,  SW_WND,  OS_FX  ,   _______, KC_4,    KC_5,    KC_6,    _______,
+        _______, SHT_TAB, SHT_ALT, SW_WND,  KC_DEL ,   _______, KC_7,    KC_8,    KC_9,    _______,
+        _______, SW_BK,   SW_FWD,  KC_LSFT, OS_FX  ,   KC_DOT,  KC_4,    KC_5,    KC_6,    _______,
         _______, _______, _______, _______, TO_UNRL,   KC_0,    KC_1,    KC_2,    KC_3,    _______,
                                    _______, _______,   _______, _______
     ),
@@ -144,7 +145,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_ARROWS] = LAYOUT_SUPER(
-        _______, CMD_SF,  _______, CMD_P,   CMD_PLT,   ALT_LFT, GO_BACK, GO_FWD,  ALT_RHT, _______,
+        _______, CMD_SF,  OP_TRM,  CMD_P,   CMD_PLT,   ALT_LFT, GO_BACK, GO_FWD,  ALT_RHT, _______,
         _______, _______, ALT_ENT, KC_LSFT, ALT_BSP,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
         _______, _______, _______, _______, EP_HOME,   KC_HOME, ALT_DWN, ALT_UP,  KC_END,  _______,
                                    _______, _______,   _______, _______
@@ -220,6 +221,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     static bool alt_shift_left_registered;
     static bool alt_shift_right_registered;
     static bool ctl_bspc_registered;
+    static bool open_terminal_registered;
 
     switch (keycode) {
 
@@ -441,6 +443,32 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
         return true;
 
+    // open terminal for vscode is ctrl + grave
+    // on both mac and windows
+    case OP_TRM:
+        printf("open terminal pressed\n");
+        if(record->event.pressed) {
+            printf("sending ctrl grave\n");
+            add_mods(MOD_MASK_CTRL);
+            
+            // send ctrl + grave
+            register_code(KC_GRAVE);
+            open_terminal_registered = true;
+
+            // put mod state back so 
+            // subsequent presses are considered 'alt'
+            set_mods(mod_state);
+            return false;
+        } else {
+            if(open_terminal_registered) {
+                printf("releasing ctl grave \n");
+                unregister_code(KC_GRAVE);
+                open_terminal_registered = false;
+                return false;
+            }
+            return true;
+        }
+        return true;
     }
     return true;
 };
