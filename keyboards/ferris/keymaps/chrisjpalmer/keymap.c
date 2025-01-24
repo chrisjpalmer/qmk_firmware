@@ -37,7 +37,7 @@ enum layers {
 
 #define EP_HOME OSL(_EPHEMERAL_HOME)
 #define OS_FX OSL(_FUNCTION_KEYS)
-#define TO_UNRL TO(_UNREAL)
+#define LU(KEY) LT(_UNREAL, KEY)
 #define TO_QRTY TO(_QWERTY)
 
 #define GUI_SLS LGUI_T(KC_SLSH)
@@ -118,7 +118,7 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_QWERTY] = LAYOUT(
         KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,      KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,
-        KC_A,    KC_S,    KC_D,    KC_F,    KC_G,      KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN,
+        LU(KC_A),KC_S,    KC_D,    KC_F,    KC_G,      KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN,
         GUI_Z,   ALT_X,   KC_C,    KC_V,    KC_B,      KC_N,    KC_M,    KC_COMM, ALT_DOT, GUI_SLS,
               LCTL_T(KC_ENT), LT(_NUMBERS, KC_BSPC),    LT(_SPECIAL, KC_SPC), KC_LSFT
     ),
@@ -132,8 +132,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_NUMBERS] = LAYOUT_SUPER(
         _______, SHT_TAB, SHT_ALT, SW_WND,  KC_DEL ,   _______, KC_7,    KC_8,    KC_9,    _______,
-        _______, SW_BK,   SW_FWD,  KC_LSFT, OS_FX  ,   KC_DOT,  KC_4,    KC_5,    KC_6,    _______,
-        _______, _______, _______, _______, TO_UNRL,   KC_0,    KC_1,    KC_2,    KC_3,    _______,
+        _______, SW_BK,   SW_FWD,  KC_LSFT, _______,   KC_DOT,  KC_4,    KC_5,    KC_6,    _______,
+        _______, _______, _______, _______, OS_FX  ,   KC_0,    KC_1,    KC_2,    KC_3,    _______,
                                    _______, _______,   _______, _______
     ),
 
@@ -152,10 +152,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_EPHEMERAL_HOME] = LAYOUT(
-        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, QK_REBOOT,
+        EH_LEFT, XXXXXXX, XXXXXXX, XXXXXXX, EH_RGHT,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, QK_REBOOT,
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, QK_BOOT,
-                            XXXXXXX, TO(_QWERTY), TO(_SPECIAL),   XXXXXXX
+                            TO(_UNREAL), TO(_QWERTY), TO(_SPECIAL),   XXXXXXX
     ),
 
     [_UNREAL] = LAYOUT(
