@@ -61,6 +61,7 @@ enum layers {
 #define SHT_ALT LSFT(KC_LALT)
 #define SHT_TAB LSFT(KC_TAB)
 #define ALT_ENT LALT(KC_ENT)
+#define MAX_MZ LCTL(LOPT(KC_ENT))
 #define LIVE_CP LGUI(LALT(KC_F11))
 #define VS_BLD LGUI(LSFT(KC_B))
 #define VS_RUN KC_F5
@@ -146,7 +147,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_ARROWS] = LAYOUT_SUPER(
         _______, CMD_SF,  OP_TRM,  CMD_P,   CMD_PLT,   ALT_LFT, GO_BACK, GO_FWD,  ALT_RHT, _______,
-        _______, _______, ALT_ENT, KC_LSFT, ALT_BSP,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
+        _______, MAX_MZ,  ALT_ENT, KC_LSFT, ALT_BSP,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
         _______, _______, _______, _______, EP_HOME,   KC_HOME, ALT_DWN, ALT_UP,  KC_END,  _______,
                                    _______, _______,   _______, _______
     ),
