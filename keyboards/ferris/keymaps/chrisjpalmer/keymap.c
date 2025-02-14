@@ -61,7 +61,6 @@ enum layers {
 #define SHT_ALT LSFT(KC_LALT)
 #define SHT_TAB LSFT(KC_TAB)
 #define ALT_ENT LALT(KC_ENT)
-#define MAX_MZ LCTL(LOPT(KC_ENT))
 #define LIVE_CP LGUI(LALT(KC_F11))
 #define VS_BLD LGUI(LSFT(KC_B))
 #define VS_RUN KC_F5
@@ -69,6 +68,9 @@ enum layers {
 #define SW_BK PB_2
 #define SW_WND PB_3
 #define OP_TRM PB_4
+#define MAX_MZ PB_5
+#define DCK_LFT PB_6
+#define DCK_RHT PB_7
 
 // Defines a layout for auxiliary layers; the layout will be common on the
 // different layers, so it is better to only define it once.
@@ -148,7 +150,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_ARROWS] = LAYOUT_SUPER(
         _______, CMD_SF,  OP_TRM,  CMD_P,   CMD_PLT,   ALT_LFT, GO_BACK, GO_FWD,  ALT_RHT, _______,
         _______, MAX_MZ,  ALT_ENT, KC_LSFT, ALT_BSP,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
-        _______, _______, _______, _______, EP_HOME,   KC_HOME, ALT_DWN, ALT_UP,  KC_END,  _______,
+        _______, DCK_LFT, DCK_RHT, _______, EP_HOME,   KC_HOME, ALT_DWN, ALT_UP,  KC_END,  _______,
                                    _______, _______,   _______, _______
     ),
 
@@ -223,6 +225,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     static bool alt_shift_right_registered;
     static bool ctl_bspc_registered;
     static bool open_terminal_registered;
+    static bool maximize_registered;
+    static bool dock_left_registered;
+    static bool dock_right_registered;
 
     switch (keycode) {
 
@@ -465,6 +470,97 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 printf("releasing ctl grave \n");
                 unregister_code(KC_GRAVE);
                 open_terminal_registered = false;
+                return false;
+            }
+            return true;
+        }
+        return true;
+
+    // maximize button
+    case MAX_MZ:
+        printf("maximize pressed\n");
+        if(record->event.pressed) {
+            printf("sending maximize\n");
+            if(did_detect_windows) {
+                set_mods(MOD_MASK_GUI);
+                register_code(KC_UP);
+            } else {
+                set_mods(MOD_MASK_CTRL | MOD_MASK_ALT);
+                register_code(KC_ENTER);
+            }
+            
+            
+            maximize_registered = true;
+
+            // put mod state back
+            set_mods(mod_state);
+            return false;
+        } else {
+            if(maximize_registered) {
+                printf("releasing maximize \n");
+                if(did_detect_windows) {
+                    unregister_code(KC_UP);
+                } else {
+                    unregister_code(KC_ENTER);
+                }
+                maximize_registered = false;
+                return false;
+            }
+            return true;
+        }
+        return true;
+
+    // dock left
+    case DCK_LFT:
+        printf("dock_left pressed\n");
+        if(record->event.pressed) {
+            printf("sending dock_left\n");
+            if(did_detect_windows) {
+                set_mods(MOD_MASK_GUI);
+            } else {
+                set_mods(MOD_MASK_CTRL | MOD_MASK_ALT);
+            }
+            register_code(KC_LEFT);
+            
+            
+            dock_left_registered = true;
+
+            // put mod state back
+            set_mods(mod_state);
+            return false;
+        } else {
+            if(dock_left_registered) {
+                printf("releasing dock_left \n");
+                unregister_code(KC_LEFT);
+                dock_left_registered = false;
+                return false;
+            }
+            return true;
+        }
+        return true;
+
+    case DCK_RHT:
+        printf("dock_right pressed\n");
+        if(record->event.pressed) {
+            printf("sending dock_right\n");
+            if(did_detect_windows) {
+                set_mods(MOD_MASK_GUI);
+            } else {
+                set_mods(MOD_MASK_CTRL | MOD_MASK_ALT);
+            }
+            register_code(KC_RIGHT);
+            
+            
+            dock_right_registered = true;
+
+            // put mod state back
+            set_mods(mod_state);
+            return false;
+        } else {
+            if(dock_right_registered) {
+                printf("releasing dock_right \n");
+                unregister_code(KC_RIGHT);
+                dock_right_registered = false;
                 return false;
             }
             return true;
