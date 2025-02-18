@@ -72,6 +72,40 @@ enum layers {
 #define DCK_LFT PB_6
 #define DCK_RHT PB_7
 
+
+#define BOOL_STATE(name) static bool name##_registered;
+
+#define DOCK(state, key) \
+printf(#state "pressed\n"); \
+if(record->event.pressed) { \
+    printf("sending " #state "\n"); \
+    if(did_detect_windows) { \
+        set_mods(MOD_MASK_GUI); \
+    } else { \
+        set_mods(MOD_MASK_CTRL | MOD_MASK_ALT); \
+    } \
+    register_code(key); \
+    state##_registered = true; \
+    set_mods(mod_state); \
+    return false; \
+} else { \
+    if(state##_registered) { \
+        printf("releasing " #state "\n"); \
+        if(did_detect_windows) { \
+            set_mods(MOD_MASK_GUI); \
+        } \
+        unregister_code(key); \
+        if(did_detect_windows) { \
+            set_mods(mod_state); \
+            unregister_mods(MOD_MASK_GUI); \
+        } \
+        state##_registered = false; \
+        return false; \
+    } \
+    return true; \
+} \
+return true;
+
 // Defines a layout for auxiliary layers; the layout will be common on the
 // different layers, so it is better to only define it once.
 #define LAYOUT_SUPER( \
@@ -226,8 +260,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     static bool ctl_bspc_registered;
     static bool open_terminal_registered;
     static bool maximize_registered;
-    static bool dock_left_registered;
-    static bool dock_right_registered;
+    BOOL_STATE(dock_left)
+    BOOL_STATE(dock_right)
 
     switch (keycode) {
 
@@ -512,63 +546,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     // dock left
     case DCK_LFT:
-        printf("dock_left pressed\n");
-        if(record->event.pressed) {
-            printf("sending dock_left\n");
-            if(did_detect_windows) {
-                set_mods(MOD_MASK_GUI);
-            } else {
-                set_mods(MOD_MASK_CTRL | MOD_MASK_ALT);
-            }
-            register_code(KC_LEFT);
-            
-            
-            dock_left_registered = true;
-
-            // put mod state back
-            set_mods(mod_state);
-            return false;
-        } else {
-            if(dock_left_registered) {
-                printf("releasing dock_left \n");
-                unregister_code(KC_LEFT);
-                dock_left_registered = false;
-                return false;
-            }
-            return true;
-        }
-        return true;
+        DOCK(dock_left, KC_LEFT)
 
     case DCK_RHT:
-        printf("dock_right pressed\n");
-        if(record->event.pressed) {
-            printf("sending dock_right\n");
-            if(did_detect_windows) {
-                set_mods(MOD_MASK_GUI);
-            } else {
-                set_mods(MOD_MASK_CTRL | MOD_MASK_ALT);
-            }
-            register_code(KC_RIGHT);
-            
-            
-            dock_right_registered = true;
-
-            // put mod state back
-            set_mods(mod_state);
-            return false;
-        } else {
-            if(dock_right_registered) {
-                printf("releasing dock_right \n");
-                unregister_code(KC_RIGHT);
-                dock_right_registered = false;
-                return false;
-            }
-            return true;
-        }
-        return true;
+        DOCK(dock_right, KC_RIGHT)
     }
     return true;
 };
+
 
 bool is_windows(bool key_down, void *layer) {
     printf("is_windows() called, returning %i\n", did_detect_windows);
