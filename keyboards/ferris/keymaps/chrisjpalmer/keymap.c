@@ -262,6 +262,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     static bool maximize_registered;
     BOOL_STATE(dock_left)
     BOOL_STATE(dock_right)
+    BOOL_STATE(close_window);
 
     switch (keycode) {
 
@@ -316,6 +317,38 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                     unregister_code(KC_TAB);
                     return false;
                 }
+            }
+            return true;
+        }
+        return true;
+    
+    // override escape to send a different sequence
+    // when alt_tab mode is activated    
+    case KC_ESC:
+        // send this as q on mac and del on windows
+        if (record->event.pressed) {
+            if(alt_tab_entered) {
+                if(did_detect_windows) {
+                    printf("triggering alt del\n");
+                    register_code(KC_DEL);
+                } else {
+                    printf("triggering cmd q\n");
+                    register_code(KC_Q);
+                }
+                close_window_registered = true;
+                return false;
+            }
+        } else { 
+            if (close_window_registered) {
+                if(did_detect_windows) {
+                    printf("releasing alt del\n");
+                    unregister_code(KC_DEL);
+                } else {
+                    printf("releasing cmd q\n");
+                    unregister_code(KC_Q);
+                }
+                close_window_registered = false;
+                return false;
             }
             return true;
         }
